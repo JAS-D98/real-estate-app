@@ -4,6 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import icons from '@/constants/icons'
 import images from '@/constants/images'
 import { settings } from '@/constants/data'
+import { Alert } from 'react-native'
+import { logout } from '@/lib/appwrite'
+import { useGlobalContext } from '@/lib/global-provider'
 
 interface SettingsItemProps{
   icon:ImageSourcePropType;
@@ -24,8 +27,16 @@ const SettingsItem=({icon, title, onPress, textStyle, showArrow=true}: SettingsI
 )
 
 const profile = () => {
-  const handleLogout=async()=>{
+  const {user, refetch}=useGlobalContext();
 
+  const handleLogout=async()=>{
+    const result=await logout();
+    if(result){
+    Alert.alert("Success", "You have been logged out");
+    refetch()
+    }else{
+      Alert.alert("Error", "An error occurred while logging out")
+    }
   }
   return (
     <SafeAreaView className='h-full bg-white '>
@@ -36,11 +47,11 @@ const profile = () => {
         </View>
         <View className='flex-row justify-center flex mt-5 '>
           <View className='flex flex-col items-center relative mt-5'>
-            <Image source={images.avatar} className='size-44 rounded-full relative'/>
+            <Image source={{uri:user?.avatar}} className='size-44 rounded-full relative'/>
             <TouchableOpacity className='absolute bottom-16 right-2'>
               <Image source={icons.edit} className='size-9'/>
             </TouchableOpacity>
-            <Text className='text-2xl font-rubik-bold mt-2'>Jasper Wambugu</Text>
+            <Text className='text-2xl font-rubik-bold mt-2'>{user?.name}</Text>
           </View>
         </View>
         <View className='flex flex-col mt-10'>
@@ -53,7 +64,7 @@ const profile = () => {
           ))}
         </View>
         <View className='flex flex-col mt-5 border-t pt-5 border-primary-200'>
-          <SettingsItem icon={icons.logout} title='Logout' textStyle='text-danger' onPress={handleLogout}/>
+          <SettingsItem icon={icons.logout} title='Logout' showArrow={false} textStyle='text-danger' onPress={handleLogout}/>
         </View>
       </ScrollView>
     </SafeAreaView>
